@@ -33,9 +33,11 @@ int main(int argc, char * argv[]) {
     
     //if setup with no errors start display_loop    
     if(!graphicsObjects.Failure) {
+
         graphics::display_loop(matrixBuffer, matrixBuffer2, graphicsObjects, boxWidth);    
     }
     else {
+
         return 1;
     }
 

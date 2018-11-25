@@ -62,17 +62,35 @@ namespace graphics {
             return graphicsObjects; 
         } 
 
-        
         /*
          *  SUCCESSFULLY INITIALIZED
          */
-         
+        
+        initialize_background(graphicsObjects.renderer, windowWidth, windowHeight);
+             
         //make sure failure field is set to false
         graphicsObjects.Failure = false;
 
         return graphicsObjects; 
     }
 
+    void initialize_background(SDL_Renderer * renderer, int windowWidth, int windowHeight){
+
+        SDL_Rect rect;
+
+        //settup width and height 
+        rect.w = windowWidth;
+        rect.h = windowHeight; 
+
+        //set up start position
+        rect.y = 0;  
+        rect.x = 0;
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderDrawRect(renderer, &rect);
+        SDL_RenderPresent(renderer);
+    }
 
     void display_loop( std::vector< std::vector< bool > > &matrixBuffer, std::vector< std::vector< bool > > &matrixBuffer2, SDL_Objects &graphicsObjects, int boxWidth) {
         
@@ -132,6 +150,7 @@ namespace graphics {
     }
     
     
+
     void print_matrix(SDL_Renderer * renderer,  std::vector< std::vector< bool > > &matrixBuffer, std::vector< std::vector< bool > > &nextMatrix, int boxWidth) {
 
         /*
@@ -198,6 +217,4 @@ namespace graphics {
 
         SDL_RenderPresent(renderer);
     }
-
 }
-

@@ -26,6 +26,11 @@ namespace graphics {
     SDL_Objects init(SDL_Objects &, int windowWidth, int windowHeight);
 
     /*
+     * sets the background to black to avoid any previous images from showing up
+     */
+    void initialize_background(SDL_Renderer * renderer, int windowWidth, int windowHeight);
+
+    /*
      * render squares(cells) into window using matrixBuffer
      * nextMatrix to check for cells that were either alive or dead last time 
      * saving the need to re-render them as an optimisation
