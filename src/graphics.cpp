@@ -2,6 +2,7 @@
 #include <iostream>
 #include "graphics.h"
 #include "matrix.h"
+#include <stdlib.h>
 
 namespace graphics {
     
@@ -10,8 +11,11 @@ namespace graphics {
         stream << errorMessage << ": SDL Error: " << SDL_GetError() << std::endl;
     } 
 
-    SDL_Objects init(SDL_Objects& graphicsObjects, int windowWidth = 0, int windowHeight = 0) {
+    int init(SDL_Objects& graphicsObjects) {
         
+        int windowWidth;
+        int windowHeight;        
+
         /*
          *  Initialize SDL
          *  if error:
@@ -21,10 +25,7 @@ namespace graphics {
         if( SDL_Init(SDL_INIT_VIDEO) ) {
 
             printf("SDL could not initialize! SDL error: %s\n", SDL_GetError());
-
-            graphicsObjects.Failure = true; 
-
-            return graphicsObjects;        
+            return -1;        
         }
         
         
@@ -34,18 +35,22 @@ namespace graphics {
          *      print to terminal and exit with Failure field set true
          */
 
-        graphicsObjects.window = SDL_CreateWindow( "Conways Game Of Life", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, 0);
+        graphicsObjects.window = SDL_CreateWindow( "Conways Game Of Life", 0, 0, 0, 0, 
+                SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS);
 
         if(graphicsObjects.window == NULL) {
-
             Print_SDL_Error(std::cout, "couldn't create window");
-
-            graphicsObjects.Failure = true; 
-
-            return graphicsObjects;
-        } 
-
+            return -1;
+        }
         
+        //get active display size and set window size correctly 
+        if(get_display_size(graphicsObjects, &windowWidth, &windowHeight) < 0){
+            return -1; 
+        }
+        if( windowWidth > 0 && windowHeight > 0){
+//            SDL_SetWindowSize(graphicsObjects.window, windowWidth, windowHeight);
+        }
+
         /*
          * Initialize SDL_renderer object
          * if error:
@@ -57,21 +62,71 @@ namespace graphics {
 
             Print_SDL_Error(std::cout, "failed to get renderer for window");
 
-            graphicsObjects.Failure = true;
-
-            return graphicsObjects; 
+            return -1; 
         } 
 
         /*
          *  SUCCESSFULLY INITIALIZED
          */
-        
-        initialize_background(graphicsObjects.renderer, windowWidth, windowHeight);
-             
-        //make sure failure field is set to false
-        graphicsObjects.Failure = false;
 
-        return graphicsObjects; 
+        initialize_background(graphicsObjects.renderer, windowWidth, windowHeight);
+
+        return 1; 
+    }
+    
+    int get_usable_window_size(SDL_Objects &graphicsObjects, int*width, int*height){
+        
+        int windowWidth = 0;
+        int windowHeight = 0;
+        if(get_display_size(graphicsObjects, &windowWidth, &windowHeight) < 0){
+            return -1;
+        }
+        
+        int topBorder = 0;
+        int leftBorder = 0;
+        int rightBorder = 0;
+        int bottomBorder = 0; 
+        int positionX = 0;
+        int positionY = 0; 
+
+        if(SDL_GetWindowBordersSize(graphicsObjects.window, &topBorder, &leftBorder,
+                    &bottomBorder, &rightBorder) < 0){
+            Print_SDL_Error(std::cout, "failed to get window border size.");
+            return -1;
+        }
+
+        SDL_GetWindowPosition(graphicsObjects.window, &positionX, &positionY);
+
+        windowHeight -= (positionY + topBorder + bottomBorder);
+        windowWidth -= (leftBorder + rightBorder);
+
+        *width = windowWidth;
+        *height = windowHeight;
+
+        return 1;
+    }
+
+    int get_display_size(SDL_Objects &graphicsObjects, int *width, int *height){
+ 
+        /* find the active display so we can find the size of the display the 
+         * window is currently in
+         */ 
+        SDL_DisplayMode displayMode;
+        int windowDisplayIndex = SDL_GetWindowDisplayIndex(graphicsObjects.window); 
+        if(windowDisplayIndex < 0){
+            Print_SDL_Error(std::cout, "error getting active display index.");
+            return -1;
+        }
+                 
+        if(SDL_GetCurrentDisplayMode(windowDisplayIndex, &displayMode) != 0){
+            Print_SDL_Error(std::cout, "error getting active display mode info.");
+            return -1;
+        }
+
+        *width = displayMode.w;
+        *height = displayMode.h;
+        
+       return 1; 
     }
 
     void initialize_background(SDL_Renderer * renderer, int windowWidth, int windowHeight){
@@ -141,7 +196,7 @@ namespace graphics {
             switchMatrix = !switchMatrix;
 
             //SDL_RenderClear( renderer ); 
-            SDL_Delay(300);
+            SDL_Delay(150);
         }    
         
         //clean up
@@ -166,7 +221,6 @@ namespace graphics {
         //set up start position
         rect.y = 0;  
         rect.x = 0;
-    
         
         /*
          * loop over matrix and render cells as appropriate
@@ -185,7 +239,11 @@ namespace graphics {
 
                 //if cell is alive set color to white
                 if( matrixBuffer[currentRow][currentColumn] == true ) {
-                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                    int red = 255;//rand() % 256;
+                    int green = 255;//rand() % 256;
+                    int blue = 255; //rand() % 256;
+                     
+                    SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
                 }
                 
                 //if cell was dead in last iteration don't redraw it
@@ -204,8 +262,8 @@ namespace graphics {
                 SDL_RenderFillRect(renderer, &rect);
 
                 //draw white ouline
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                SDL_RenderDrawRect(renderer, &rect);
+                //SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                //SDL_RenderDrawRect(renderer, &rect);
                 
                 //set to draw cell in next column
                 rect.x += boxWidth; 

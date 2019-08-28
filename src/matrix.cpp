@@ -44,7 +44,9 @@ namespace matrix {
         }
     }
 
-    size_t count_alive_neighbours( std::vector< std::vector< bool > > &matrix, size_t currentRow, size_t currentColumn, size_t maxRow, size_t maxColumns ) {
+    size_t count_alive_neighbours( std::vector< std::vector< bool > > &matrix, 
+                                    size_t currentRow, size_t currentColumn, 
+                                    size_t maxRow, size_t maxColumns ) {
 
         size_t aliveNeighbours = 0;
         size_t top_row, bottom_row;
@@ -90,8 +92,10 @@ namespace matrix {
         } 
         
         //count currently active cell
+        /*
         if(matrix[currentRow][currentColumn] == true)
             aliveNeighbours++;
+        */
 
         //top left corner
         if(matrix[top_row][left] == true)
@@ -130,15 +134,15 @@ namespace matrix {
     
     void update_matrix( std::vector< std::vector< bool > > &activeMatrix, std::vector< std::vector< bool > > &futureMatrix ) {
 
-        size_t rows = activeMatrix.size();   
-        size_t columns = activeMatrix[0].size(); 
-        int aliveNeighbours;
+        size_t rows = activeMatrix.size()-1;   
+        size_t columns = activeMatrix[0].size()-1; 
+        int aliveNeighbours = 0;
 
-        for( size_t currentRow = 0;currentRow < rows; currentRow++ ) {
+        for( size_t currentRow = 0;currentRow <= rows; currentRow++ ) {
 
-            for( size_t currentColumn = 0;currentColumn < columns; currentColumn++ ) {
+            for( size_t currentColumn = 0;currentColumn <= columns; currentColumn++ ) {
 
-                aliveNeighbours = count_alive_neighbours(activeMatrix, currentRow, currentColumn, rows-1, columns-1); 
+                aliveNeighbours = count_alive_neighbours(activeMatrix, currentRow, currentColumn, rows, columns); 
 
                 futureMatrix[currentRow][currentColumn] = false;
                 //cell is alive and has less than 2 neighbours and dies
@@ -146,7 +150,7 @@ namespace matrix {
                     futureMatrix[currentRow][currentColumn] = false;
 
                 //live cell has 2 neigbouring cells so continues living
-                else if( aliveNeighbours == 2 && futureMatrix[currentRow][currentColumn] == true )
+                else if( aliveNeighbours == 2 && activeMatrix[currentRow][currentColumn] == true )
                     futureMatrix[currentRow][currentColumn] = true;  
 
                 //cell has 3 neighbours it is born or still lives
@@ -156,6 +160,8 @@ namespace matrix {
                 //cell has more than 3 neighbours dies from overcrowding
                 else if( aliveNeighbours > 3 )
                     futureMatrix[currentRow][currentColumn] = false;
+
+                aliveNeighbours = 0;
 
             } 
         } 

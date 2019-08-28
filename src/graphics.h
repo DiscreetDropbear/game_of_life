@@ -12,7 +12,6 @@ namespace graphics {
         SDL_Window * window;
         SDL_Renderer *renderer;
         SDL_Event event;
-        bool Failure;
     };
     
     /*
@@ -23,7 +22,11 @@ namespace graphics {
     /*
      * Initialize SDL_Objects struct with needed SDL_Objects
      */ 
-    SDL_Objects init(SDL_Objects &, int windowWidth, int windowHeight);
+    int init(SDL_Objects &);
+
+    
+    int get_usable_window_size(SDL_Objects &graphicsObjects, int*width, int*height);
+    int get_display_size(SDL_Objects &graphicsObjects, int *width, int *height);
 
     /*
      * sets the background to black to avoid any previous images from showing up

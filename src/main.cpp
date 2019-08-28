@@ -7,39 +7,39 @@
 #include "graphics.h"
 
 int main(int argc, char * argv[]) {
-         
-    int windowHeight = 1030, windowWidth = 1900 ;
-    int boxWidth = 5;
     
+    int windowWidth;
+    int windowHeight;
+    const int boxWidth = 3;
     std::vector< std::vector< bool > > matrixBuffer; 
     std::vector< std::vector< bool > > matrixBuffer2;
-    
+    graphics::SDL_Objects graphicsObjects; 
+
     /*
-     * settup matricies and randomize the input
+     *settup SDL objects
      */
 
+    if( graphics::init(graphicsObjects) == -1){
+
+        printf("SDL could not initiate! SDL error: %s\n", SDL_GetError());
+        return -1;
+    } 
+    
+    SDL_RenderPresent(graphicsObjects.renderer);
+    graphics::get_usable_window_size(graphicsObjects, &windowWidth, &windowHeight);
+
+    //SDL_GL_GetDrawableSize(graphicsObjects.window, &windowWidth,  
+    //            &windowHeight); 
+    printf("windowWidth: %d, windowHeight: %d", windowWidth, windowHeight);
+    
     //settup matricies 
     matrix::initialize_matrix(matrixBuffer, windowWidth, windowHeight, boxWidth);
     matrix::initialize_matrix(matrixBuffer2, windowWidth, windowHeight, boxWidth);
 
     //generate random input for first matrix 
-    matrix::randomize_matrix(matrixBuffer, 10);
+    matrix::randomize_matrix(matrixBuffer, 12);
+
+    graphics::display_loop(matrixBuffer, matrixBuffer2, graphicsObjects, boxWidth);    
     
-    /*
-     *settup SDL objects
-     */
-    graphics::SDL_Objects graphicsObjects; 
-    graphics::init(graphicsObjects, windowWidth, windowHeight); 
-    
-    //if setup with no errors start display_loop    
-    if(!graphicsObjects.Failure) {
-
-        graphics::display_loop(matrixBuffer, matrixBuffer2, graphicsObjects, boxWidth);    
-    }
-    else {
-
-        return 1;
-    }
-
     return 0;
 }
